@@ -1,61 +1,98 @@
 const roll = document.querySelector("#roll");
 let result = document.querySelector("#result");
-let turnPlayer1 = true;
-let turnPlayer2 = false;
+let turnPlayer = document.querySelector("#turnPlayer");
+let turnPlayerOne = true;
 let player1Pos = 0;
 let player2Pos = 0;
-maxCell = 100;
-roll.addEventListener("click", () => {
-  const result_local = Math.floor(Math.random() * 6) + 1;
-  result.innerHTML = `Result: ${result_local}`;
-  // debugger;
-  if (turnPlayer1) {
-    if (player1Pos > 0) {
-      let prevP1 = document.getElementById(`cell-${player1Pos}`);
-      prevP1.classList.remove("bg-blue-700");
-      prevP1.classList.add("bg-yellow-200");
-    }
+let maxCell = 100;
 
-    player1Pos += result_local;
-    if (player1Pos > maxCell) player1Pos = maxCell;
+const yellow = 'bg-yellow-200';
+const purple = 'bg-purple-500';
+const blue = 'bg-blue-500';
+const red = 'bg-red-700';
+const green = 'bg-green-500';
+
+turnPlayer.innerHTML = turnPlayerOne ? "Player 1" : "Player 2";
+
+function rollDice() {
+  if (player1Pos >= maxCell || player2Pos >= maxCell) {
+    return;
+  }
+
+  const diceValue = Math.floor(Math.random() * 6) + 1;
+  result.innerHTML = `=>: ${diceValue}`;
+
+  if (turnPlayerOne) {
+    let p1CurrentPosition = player1Pos;
+    let p1CurrentCellElement = document.getElementById(`cell-${player1Pos}`);
+    player1Pos += diceValue;
+    if (player1Pos > maxCell) {
+      player1Pos = maxCell;
+    }
+    let p1NextCellElement = document.getElementById(`cell-${player1Pos}`);
+    changeBoxProperties(blue, p1NextCellElement, p1CurrentCellElement, turnPlayerOne);
+    console.log(`P1 Last Position: ${p1CurrentPosition}`);
+
+    if (p1CurrentPosition == player2Pos) {
+      let p2CellElement = document.getElementById(`cell-${player2Pos}`);
+      changeBoxProperties(red, p2CellElement, null, null);
+    }
+  } else {
+    let p2CurrentPosition = player2Pos;
+    let p2CurrentCellElement = document.getElementById(`cell-${player2Pos}`);
+    player2Pos += diceValue;
+    if (player2Pos > maxCell) {
+      player2Pos = maxCell;
+    }
+    let p2NextCellElement = document.getElementById(`cell-${player2Pos}`);
+    changeBoxProperties(red, p2NextCellElement, p2CurrentCellElement, turnPlayerOne);
+    console.log(`P2 Last Position: ${p2CurrentPosition}`);
+
+    if (p2CurrentPosition == player1Pos) {
+      let p1CellElement = document.getElementById(`cell-${player1Pos}`);
+      changeBoxProperties(blue, p1CellElement, null, null);
+    }
+  }
+
+  if (player1Pos == player2Pos) {
     let p1 = document.getElementById(`cell-${player1Pos}`);
-    p1.classList.remove("bg-yellow-200");
-    p1.classList.add("bg-blue-700");
-    // console.log(`Player 1 position is ${player1Pos}`);
-    turnPlayer2 = true;
-    turnPlayer1 = false;
-  } else if (turnPlayer2) {
-    if (player2Pos > 0) {
-      let prevP2 = document.getElementById(`cell-${player2Pos}`);
-      prevP2.classList.remove("bg-red-700");
-      prevP2.classList.add("bg-yellow-200");
-    }
+    // let p2 = document.getElementById(`cell-${player2Pos}`);
+    // add purple
+    changeBoxProperties(purple, p1, null, null);
+    // changeBoxProperties(purple, p2, null, null);
+  }
 
-    player2Pos += result_local;
-    if (player2Pos > maxCell) player2Pos = maxCell;
-    let p2 = document.getElementById(`cell-${player2Pos}`);
-    p2.classList.remove("bg-yellow-200");
-    p2.classList.add("bg-red-700");
-    // console.log(`Player 2 position is ${player2Pos}`);
-    turnPlayer2 = false;
-    turnPlayer1 = true;
-  }
-  while (player1Pos == player2Pos) {
-    document
-      .getElementById(`cell-${player1Pos}`)
-      .classList.add("bg-purple-500");
-  }
-  if (player1Pos === 100) {
+  // change player turn
+  turnPlayerOne = !turnPlayerOne;
+  turnPlayer.innerHTML = turnPlayerOne ? "Player 1" : "Player 2";
+  if (player1Pos >= maxCell || player2Pos >= maxCell) {
     let gameWinner = document.createElement("div");
-    gameWinner.innerHTML = "Player 2 wins!";
-    document.body.appendChild(gameWinner);
-  }
-  if (player2Pos === 100) {
-    let gameWinner = document.createElement("div");
-    gameWinner.innerHTML = "Player 2 wins!";
     gameWinner.style.fontFamily = "cursive";
     gameWinner.style.fontSize = "72px";
-
+    gameWinner.innerHTML = player1Pos >= maxCell ? "Player 1 wins!" : "Player 2 wins!";
+    document.getElementById(`cell-${maxCell}`).classList.add(green);
     document.body.appendChild(gameWinner);
   }
-});
+}
+
+function changeBoxProperties(colorClass, currentElement, previousElement, turnPlayerOne) {
+  if (colorClass && currentElement) {
+    currentElement.classList.remove(yellow);
+    currentElement.classList.remove(purple);
+    currentElement.classList.remove(blue);
+    currentElement.classList.remove(red);
+    currentElement.classList.add(colorClass);
+  }
+
+  if (previousElement) {
+    previousElement.classList.remove(purple);
+    if (turnPlayerOne) {
+      previousElement.classList.remove(blue);
+    } else {
+      previousElement.classList.remove(red);
+    }
+
+    previousElement.classList.add(yellow);
+  }
+}
+

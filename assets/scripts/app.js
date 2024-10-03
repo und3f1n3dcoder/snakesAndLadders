@@ -31,126 +31,122 @@ turnPlayer.innerHTML = turnPlayerOne ? "Player 1" : "Player 2";
 
 function rollDice() {
   if (player1Pos >= maxCell || player2Pos >= maxCell) {
-    return; // Game has ended
+    return;
   }
 
   const diceValue = Math.floor(Math.random() * 6) + 1;
   result.innerHTML = `=>: ${diceValue}`;
 
   if (turnPlayerOne) {
-    movePlayer(1, diceValue);
+    let p1CurrentPosition = player1Pos;
+    let p1CurrentCellElement = document.getElementById(`cell-${player1Pos}`);
+    player1Pos += diceValue;
+    if (ladderMap[player1Pos] != null) {
+      triggerModal();
+    }
+    if (snakeMap[player1Pos] != null) {
+      player1Pos = snakeMap[player1Pos];
+    }
+    // player1Pos = ladderMap[`${player1Pos}`]      ? ladderMap[`${player1Pos}`]      : player1Pos;
+    if (player1Pos > maxCell) {
+      player1Pos = maxCell;
+    }
+    let p1NextCellElement = document.getElementById(`cell-${player1Pos}`);
+    changeBoxProperties(
+      blue,
+      p1NextCellElement,
+      p1CurrentCellElement,
+      turnPlayerOne
+    );
+    console.log(`P1 Last Position: ${p1CurrentPosition}`);
+
+    if (p1CurrentPosition == player2Pos) {
+      let p2CellElement = document.getElementById(`cell-${player2Pos}`);
+      changeBoxProperties(red, p2CellElement, null, null);
+    }
+
+    // for (let key in map) {
+    //   if(player1Pos===key){
+    //     player1Pos = map[`${key}`]
+    //   }
+    // }
   } else {
-    movePlayer(2, diceValue);
+    let p2CurrentPosition = player2Pos;
+    let p2CurrentCellElement = document.getElementById(`cell-${player2Pos}`);
+    player2Pos += diceValue;
+    player2Pos = ladderMap[`${player2Pos}`]
+      ? ladderMap[`${player2Pos}`]
+      : player2Pos;
+    if (player2Pos > maxCell) {
+      player2Pos = maxCell;
+    }
+    if (ladderMap[player2Pos] != null) {
+      player2Pos = ladderMap[player2Pos];
+    }
+    if (snakeMap[player2Pos] != null) {
+      player2Pos = snakeMap[player2Pos];
+    }
+    let p2NextCellElement = document.getElementById(`cell-${player2Pos}`);
+    changeBoxProperties(
+      red,
+      p2NextCellElement,
+      p2CurrentCellElement,
+      turnPlayerOne
+    );
+    console.log(`P2 Last Position: ${p2CurrentPosition}`);
+
+    if (p2CurrentPosition == player1Pos) {
+      let p1CellElement = document.getElementById(`cell-${player1Pos}`);
+      changeBoxProperties(blue, p1CellElement, null, null);
+    }
   }
 
-  // Change turn
+  if (player1Pos == player2Pos) {
+    let p1 = document.getElementById(`cell-${player1Pos}`);
+    // let p2 = document.getElementById(`cell-${player2Pos}`);
+    // add purple
+    changeBoxProperties(purple, p1, null, null);
+    // changeBoxProperties(purple, p2, null, null);
+  }
+
+  // change player turn
   turnPlayerOne = !turnPlayerOne;
   turnPlayer.innerHTML = turnPlayerOne ? "Player 1" : "Player 2";
-
-  // Check for winner
   if (player1Pos >= maxCell || player2Pos >= maxCell) {
-    declareWinner();
+    let gameWinner = document.createElement("div");
+    gameWinner.style.fontFamily = "cursive";
+    gameWinner.style.fontSize = "72px";
+    gameWinner.innerHTML =
+      player1Pos >= maxCell ? "Player 1 wins!" : "Player 2 wins!";
+    document.getElementById(`cell-${maxCell}`).classList.add(green);
+    document.body.appendChild(gameWinner);
   }
-}
-
-function movePlayer(playerNum, diceValue) {
-  let currentPos = playerNum === 1 ? player1Pos : player2Pos;
-  let currentCellElement = document.getElementById(`cell-${currentPos}`);
-
-  currentPos += diceValue;
-
-  // Check if moved past max cell
-  if (currentPos > maxCell) {
-    currentPos = maxCell; // Don't allow moving past the end
-  }
-
-  // Check for ladder or snake
-  if (ladderMap[currentPos] != null) {
-    triggerModal(playerNum); // Trigger modal for ladder
-  } else if (snakeMap[currentPos] != null) {
-    currentPos = snakeMap[currentPos]; // Move down the snake
-  }
-
-  // Update player position
-  if (playerNum === 1) {
-    player1Pos = currentPos;
-  } else {
-    player2Pos = currentPos;
-  }
-
-  let nextCellElement = document.getElementById(`cell-${currentPos}`);
-  changeBoxProperties(
-    playerNum === 1 ? blue : red,
-    nextCellElement,
-    currentCellElement,
-    playerNum === 1
-  );
-
-  // Check if they land on the same cell
-  if (currentPos === (playerNum === 1 ? player2Pos : player1Pos)) {
-    let otherCellElement = document.getElementById(
-      `cell-${playerNum === 1 ? player2Pos : player1Pos}`
-    );
-    changeBoxProperties(purple, otherCellElement, null, null);
-  }
-}
-
-function triggerModal(playerNum) {
-  modal.classList.remove("hidden"); // Show modal
-  const question = document.getElementById("question");
-  let localQuestion = modalArray[Math.floor(Math.random() * modalArray.length)];
-  question.innerHTML = localQuestion.question;
-
-  // Set up answer submission
-  const answer = document.getElementById("answer");
-  const submitButton = document.getElementById("submitAnswer"); // Assuming you have a button to submit the answer
-
-  submitButton.onclick = () => {
-    console.log(typeof localQuestion.answer);
-    console.log(typeof answer.value);
-    if (answer.value === localQuestion.answer) {
-      // Move player up the ladder
-      if (playerNum === 1) {
-        player1Pos = ladderMap[player1Pos];
-      } else {
-        player2Pos = ladderMap[player2Pos];
-      }
-    }
-    modal.classList.add("hidden"); // Close modal
-    answer.value = ""; // Reset answer input
-  };
 }
 
 function changeBoxProperties(
   colorClass,
   currentElement,
   previousElement,
-  isPlayerOne
+  turnPlayerOne
 ) {
   if (colorClass && currentElement) {
-    currentElement.classList.remove(yellow, purple, blue, red);
+    currentElement.classList.remove(yellow);
+    currentElement.classList.remove(purple);
+    currentElement.classList.remove(blue);
+    currentElement.classList.remove(red);
     currentElement.classList.add(colorClass);
   }
 
   if (previousElement) {
     previousElement.classList.remove(purple);
-    previousElement.classList.add(yellow);
-    if (isPlayerOne) {
+    if (turnPlayerOne) {
       previousElement.classList.remove(blue);
     } else {
       previousElement.classList.remove(red);
     }
-  }
-}
 
-function declareWinner() {
-  let gameWinner = document.createElement("div");
-  gameWinner.style.fontFamily = "cursive";
-  gameWinner.style.fontSize = "72px";
-  gameWinner.innerHTML =
-    player1Pos >= maxCell ? "Player 1 wins!" : "Player 2 wins!";
-  document.getElementById(`cell-${maxCell}`).classList.add(green);
-  document.body.appendChild(gameWinner);
+    previousElement.classList.add(yellow);
+  }
 }
 
 const modalArray = [
@@ -198,3 +194,43 @@ const modalArray = [
     answer: "12320cm3",
   },
 ];
+
+// Move submitAnswer function outside of triggerModal
+function submitAnswer() {
+  
+  if (ladderMap[player1Pos] != null) {
+    modal.classList.toggle("hidden");
+    const question = document.getElementById("question");
+    let localQuestion =
+      modalArray[Math.floor(Math.random() * modalArray.length)];
+    question.innerHTML = localQuestion.question;
+    const answer = document.getElementById("answer").value;
+
+    if (answer.value === localQuestion["answer"]) {
+      player1Pos = ladderMap[player1Pos];
+      modal.classList.toggle("hidden");
+    }
+}
+
+function triggerModal() {
+  
+  }
+  if (snakeMap[player2Pos] != null) {
+    player2Pos = snakeMap[player2Pos];
+  }
+  if (ladderMap[player2Pos] != null) {
+    modal.classList.toggle("hidden");
+    const question = document.getElementById("question");
+    let localQuestion =
+      modalArray[Math.floor(Math.random() * modalArray.length)];
+    question.innerHTML = localQuestion.question;
+    const answer = document.getElementById("answer");
+
+    if (answer.value === localQuestion.answer) {
+      player2Pos = ladderMap[player2Pos];
+    }
+  }
+  if (snakeMap[player2Pos] != null) {
+    player2Pos = snakeMap[player2Pos];
+  }
+}

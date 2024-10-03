@@ -13,6 +13,22 @@ const blue = "bg-blue-500";
 const red = "bg-red-700";
 const green = "bg-green-500";
 
+const modalObject = {
+  question1: {
+    question:
+      "A circus tent consists of a cylindrical base surmounted by a conical roof. The radius of the cylinder is 20 m. The height of the tent is 63 m and that of the cone is 21 m. Find the volume of the tent and the area of the canvas used for making it.",
+    answer: "7102.85",
+  },
+  question2: {
+    question:
+      "A rectangular piece of paper of width 20cm and length 44cm is rolled along with its width to form a cylinder. What is the curved surface area of the cylinder so formed?",
+    answer: "880cm",
+  },
+  question3:{
+    question:"Find the total surface area and the curved surface area of a cone whose height is 28cm and diameter is 42cm",
+    answer: ""
+  }
+};
 const ladderMap = {
   7: 26,
   22: 43,
@@ -152,7 +168,11 @@ function changeBoxProperties(
 function triggerModal() {
   if (ladderMap[player1Pos] != null) {
     modal.classList.toggle("hidden");
-    player1Pos = ladderMap[player1Pos];
+    function submitAnswer() {
+      modal.classList.toggle("hidden");
+
+      player1Pos = ladderMap[player1Pos];
+    }
   }
   if (snakeMap[player1Pos] != null) {
     player1Pos = snakeMap[player1Pos];
